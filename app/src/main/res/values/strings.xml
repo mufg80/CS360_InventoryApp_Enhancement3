@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">InventoryProject</string>
+    <string name="user_name">User Name</string>
+    <string name="password">Password</string>
+    <string name="create_account"><u>Create Account</u></string>
+    <string name="login">Login</string>
+    <string name="inventory_maker">Inventory Maker</string>
+    <string name="password_confirm">Confirm</string>
+    <string name="register">Register</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="quantity">Quantity</string>
+    <string name="submit">Submit</string>
+    <string name="settings">Settings</string>
+    <string name="sms_message">This application uses SMS services in order to warn of low inventory, please accept or deny this service.</string>
+    <string name="sms_permission_granted">SMS On</string>
+    <string name="sms_permission_not_granted">SMS Off</string>
+    <string name="go_to_settings_apps_InventoryMaker_permissions_if_you_wish_to_disable_setting"><![CDATA[Go to Settings->Apps->InventoryMaker->Permissions if you wish to disable setting.]]></string>
+    <string name="enable_notifications">Enable notifications</string>
+</resources>
