@@ -11,6 +11,8 @@ public class InventoryItem {
     private String description;
     private String quantity;
 
+    private int userId;
+
     private QtyZeroListener listener;
 
     // Listener for quantity hitting zero for sms.
@@ -26,12 +28,13 @@ public class InventoryItem {
     }
 
     // Constructor for initializing class with all info.
-    public InventoryItem(int id, String title, String description, String quantity) {
+    public InventoryItem(int id, String title, String description, String quantity, int user) {
         this.id = id;
         // Using setters to apply conditions to protect data.
         setTitle(title);
         setDescription(description);
         setQuantity(quantity);
+        this.userId = user;
     }
 
     // Public getters to provide access to data.
@@ -48,6 +51,7 @@ public class InventoryItem {
     public String getQuantity(){
         return quantity;
     }
+    public int getUserId() {return userId;}
 
     // Public setters for mutating data.
     public void setTitle(String t) {

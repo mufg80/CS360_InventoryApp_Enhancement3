@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +26,14 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        InventoryItem item = new InventoryItem(5,"fromadnroid","adesc","55",2);
+        RemoteRepo repo = new RemoteRepo();
+        try {
+            int one = repo.createInventoryItem(item);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
 
         // Boilerplate code to set up view.
         super.onCreate(savedInstanceState);
@@ -121,7 +130,10 @@ public class LoginActivity extends AppCompatActivity {
                     boolean b = u.equals(dbuser);
                     if(b){
                         // User good, send them to main activity.
+                        int userId = dbuser.getId();
+
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        intent.putExtra("USER_ID", userId);
                         startActivity(intent);
                     }else{
                         // User/password combo was not correct, let user know.

@@ -32,6 +32,7 @@ public class InventoryRepo {
         values.put(InventoryDatabase.InventoryTable.COL_TITLE, item.getTitle());
         values.put(InventoryDatabase.InventoryTable.COL_DESCRIPTION, item.getDescription());
         values.put(InventoryDatabase.InventoryTable.COL_QUANTITY, item.getQuantity());
+        values.put(InventoryDatabase.InventoryTable.COL_USER_ID, item.getUserId());
 
         return database.insert(InventoryDatabase.InventoryTable.TABLE, null, values);
     }
@@ -46,7 +47,7 @@ public class InventoryRepo {
     }
 
     // Read All and return list from database of inventory objects.
-    public List<InventoryItem> getInventoryItems() {
+    public List<InventoryItem> getInventoryItems(int userId) {
         // Instantiate list.
         List<InventoryItem> itemlist = new ArrayList<InventoryItem>();
         // Select rows to return.
@@ -54,15 +55,22 @@ public class InventoryRepo {
                 InventoryDatabase.InventoryTable.COL_ID,
                 InventoryDatabase.InventoryTable.COL_TITLE,
                 InventoryDatabase.InventoryTable.COL_DESCRIPTION,
-                InventoryDatabase.InventoryTable.COL_QUANTITY
+                InventoryDatabase.InventoryTable.COL_QUANTITY,
+                InventoryDatabase.InventoryTable.COL_USER_ID
         };
+
+        // Selection by column id.
+        String selection = InventoryDatabase.InventoryTable.COL_USER_ID + " = ?";
+
+        // Args is id as string.
+        String[] selectionArgs = { String.valueOf(userId) };
 
         // Create cursor for retrieving data.
         Cursor cursor = database.query(
                 InventoryDatabase.InventoryTable.TABLE,   // The table to query
                 projection,                     // The columns to return
-                null,                      // The columns for the WHERE clause
-                null,                  // The values for the WHERE clause
+                selection,                      // The columns for the WHERE clause
+                selectionArgs,                  // The values for the WHERE clause
                 null,                           // don't group the rows
                 null,                           // don't filter by row groups
                 null                            // The sort order
@@ -74,7 +82,8 @@ public class InventoryRepo {
                     cursor.getInt(cursor.getColumnIndexOrThrow(InventoryDatabase.InventoryTable.COL_ID)),
                     cursor.getString(cursor.getColumnIndexOrThrow(InventoryDatabase.InventoryTable.COL_TITLE)),
                     cursor.getString(cursor.getColumnIndexOrThrow(InventoryDatabase.InventoryTable.COL_DESCRIPTION)),
-                    cursor.getString(cursor.getColumnIndexOrThrow(InventoryDatabase.InventoryTable.COL_QUANTITY))
+                    cursor.getString(cursor.getColumnIndexOrThrow(InventoryDatabase.InventoryTable.COL_QUANTITY)),
+                    cursor.getInt(cursor.getColumnIndexOrThrow(InventoryDatabase.InventoryTable.COL_USER_ID))
             );
             itemlist.add(item);
         }
@@ -129,7 +138,8 @@ public class InventoryRepo {
                 InventoryDatabase.InventoryTable.COL_ID,
                 InventoryDatabase.InventoryTable.COL_TITLE,
                 InventoryDatabase.InventoryTable.COL_DESCRIPTION,
-                InventoryDatabase.InventoryTable.COL_QUANTITY
+                InventoryDatabase.InventoryTable.COL_QUANTITY,
+                InventoryDatabase.InventoryTable.COL_USER_ID
         };
 
         // Selection by column id.
@@ -156,7 +166,8 @@ public class InventoryRepo {
                     cursor.getInt(cursor.getColumnIndexOrThrow(InventoryDatabase.InventoryTable.COL_ID)),
                     cursor.getString(cursor.getColumnIndexOrThrow(InventoryDatabase.InventoryTable.COL_TITLE)),
                     cursor.getString(cursor.getColumnIndexOrThrow(InventoryDatabase.InventoryTable.COL_DESCRIPTION)),
-                    cursor.getString(cursor.getColumnIndexOrThrow(InventoryDatabase.InventoryTable.COL_QUANTITY))
+                    cursor.getString(cursor.getColumnIndexOrThrow(InventoryDatabase.InventoryTable.COL_QUANTITY)),
+                    cursor.getInt(cursor.getColumnIndexOrThrow(InventoryDatabase.InventoryTable.COL_USER_ID))
             );
         }
         // Close cursor and return item.
@@ -217,6 +228,7 @@ public class InventoryRepo {
         values.put(InventoryDatabase.InventoryTable.COL_TITLE, item.getTitle());
         values.put(InventoryDatabase.InventoryTable.COL_DESCRIPTION, item.getDescription());
         values.put(InventoryDatabase.InventoryTable.COL_QUANTITY, item.getQuantity());
+        values.put(InventoryDatabase.InventoryTable.COL_USER_ID, item.getUserId());
 
         // Selection is col id.
         String selection = InventoryDatabase.InventoryTable.COL_ID + " = ?";

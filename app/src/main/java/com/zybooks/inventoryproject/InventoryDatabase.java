@@ -10,26 +10,44 @@ import androidx.annotation.Nullable;
 public class InventoryDatabase extends SQLiteOpenHelper {
     // Name and version statics.
     private static final String DATABASE_NAME = "Inventory.db";
-    private static final int VERSION = 2;
+    private static final int VERSION = 3;
     // Initializing object with a context.
     public InventoryDatabase(@Nullable Context context) {
         super(context, DATABASE_NAME, null, VERSION);
     }
 
     // Oncreate creates tables for database holding inventoryitem and user objects.
+//    @Override
+//    public void onCreate(SQLiteDatabase sqLiteDatabase) {
+//        sqLiteDatabase.execSQL("create table " + InventoryTable.TABLE + " (" +
+//                InventoryTable.COL_ID + " integer primary key autoincrement, " +
+//                InventoryTable.COL_TITLE + " text, " +
+//                InventoryTable.COL_DESCRIPTION + " text, " +
+//                InventoryTable.COL_QUANTITY + " integer)" +
+//                InventoryTable.COL_USER_ID + "integer ");
+//
+//        sqLiteDatabase.execSQL("create table " + UserTable.TABLE + " (" +
+//                UserTable.COL_ID + " integer primary key autoincrement, " +
+//                UserTable.COL_USERNAME + " text, " +
+//                UserTable.COL_PASSWORD_HASH + " text)");
+//
+//    }
+
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        sqLiteDatabase.execSQL("create table " + InventoryTable.TABLE + " (" +
-                InventoryTable.COL_ID + " integer primary key autoincrement, " +
-                InventoryTable.COL_TITLE + " text, " +
-                InventoryTable.COL_DESCRIPTION + " text, " +
-                InventoryTable.COL_QUANTITY + " integer)");
+        sqLiteDatabase.execSQL("CREATE TABLE " + UserTable.TABLE + " (" +
+                UserTable.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                UserTable.COL_USERNAME + " TEXT, " +
+                UserTable.COL_PASSWORD_HASH + " TEXT)");
 
-        sqLiteDatabase.execSQL("create table " + UserTable.TABLE + " (" +
-                UserTable.COL_ID + " integer primary key autoincrement, " +
-                UserTable.COL_USERNAME + " text, " +
-                UserTable.COL_PASSWORD_HASH + " text)");
-
+        sqLiteDatabase.execSQL("CREATE TABLE " + InventoryTable.TABLE + " (" +
+                InventoryTable.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                InventoryTable.COL_TITLE + " TEXT, " +
+                InventoryTable.COL_DESCRIPTION + " TEXT, " +
+                InventoryTable.COL_QUANTITY + " INTEGER, " +
+                InventoryTable.COL_USER_ID + " INTEGER, " +
+                "FOREIGN KEY(" + InventoryTable.COL_USER_ID + ") REFERENCES " +
+                UserTable.TABLE + "(" + UserTable.COL_ID + "))");
     }
 
     // onupgrade drops previous tables for upgrade data changes.
@@ -47,6 +65,7 @@ public class InventoryDatabase extends SQLiteOpenHelper {
         public static final String COL_TITLE = "title";
         public static final String COL_DESCRIPTION = "description";
         public static final String COL_QUANTITY = "quantity";
+        public static final String COL_USER_ID = "user";
     }
 
     public static final class UserTable{

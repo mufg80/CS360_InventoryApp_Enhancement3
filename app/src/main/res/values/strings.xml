@@ -17,4 +17,5 @@
     <string name="sms_permission_not_granted">SMS Off</string>
     <string name="go_to_settings_apps_InventoryMaker_permissions_if_you_wish_to_disable_setting"><![CDATA[Go to Settings->Apps->InventoryMaker->Permissions if you wish to disable setting.]]></string>
     <string name="enable_notifications">Enable notifications</string>
+    <string name="toggle_remote_local">Database is Local</string>
 </resources>

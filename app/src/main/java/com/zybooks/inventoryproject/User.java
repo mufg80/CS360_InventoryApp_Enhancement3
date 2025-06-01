@@ -28,6 +28,7 @@ public class User {
 
     }
     // Public getters.
+    public int getId(){return this.id; }
     public String getUser(){return this.user;}
     public String getHash(){return this.hash;}
 

@@ -33,9 +33,14 @@ import java.util.concurrent.Future;
 public class MainActivity extends AppCompatActivity implements InventoryItemAdapter.OnButtonClickListener, InventoryItem.QtyZeroListener {
     // Private fields holding various information.
     private Menu menu;
+
+    private int userId;
     private RecyclerView recyclerView;
     private InventoryItemAdapter adapter;
     private List<InventoryItem> items;
+
+    private MenuItem toggleItem;
+    private boolean isRemote = false;
 
 
     // oncreate method sets up view.
@@ -53,6 +58,12 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Get Users ID
+        Intent intent = getIntent();
+        if(intent != null && intent.hasExtra("USER_ID")){
+            this.userId = intent.getIntExtra("USER_ID", -1);
+        }
 
         // Set up recyclerview properties.
         recyclerView = findViewById(R.id.recycle_view);
@@ -108,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
                 }
 
                 // Create item with constructor.
-                InventoryItem item = new InventoryItem(0, titleText.getText().toString(), descText.getText().toString(), Integer.toString(i));
+                InventoryItem item = new InventoryItem(0, titleText.getText().toString(), descText.getText().toString(), Integer.toString(i), userId);
 
                 // Create repo item for database operation.
                 InventoryRepo repo = new InventoryRepo(getApplication());
@@ -152,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
                 InventoryRepo repo = new InventoryRepo(getApplication());
                 repo.open();
                 // Get list from database.
-                List<InventoryItem> dbitems = repo.getInventoryItems();
+                List<InventoryItem> dbitems = repo.getInventoryItems(userId);
                 // Close database.
                 repo.close();
                 return dbitems;
@@ -181,38 +192,43 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
         // Create top bar menu.
         getMenuInflater().inflate(R.menu.app_menu, menu);
         menu = menu;
+        toggleItem = menu.findItem(R.id.toggle_remote_local);
+        updateToggleTitle();
         return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    private void updateToggleTitle() {
+        if (toggleItem != null) {
+            toggleItem.setTitle(isRemote ? "Database is Remote" : "Database is Local");
+        }
+    }
 
-        // Menu onclick for going to settings intent.
-        if(item.getItemId() == R.id.go_settings){
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Your code here
+        if(item.getItemId() == R.id.toggle_remote_local){
+            isRemote = !isRemote;
+            item.setChecked(isRemote);
+            updateToggleTitle();
+            onToggleChanged(isRemote);
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    // Method to send sms when inventory item reaches 0. Only called from
-    // decrement method so that it doesn't spam messages when read from database
-    // and item is already at 0.
-    private void sendSMS(String message) {
-        String phone = "8675309"; // Remember the song!
-
-            if(ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED){
-
-                try{
-                    SmsManager manager = SmsManager.getDefault();
-                    manager.sendTextMessage(phone,null, message, null, null);
-                    Toast.makeText(this, "SMS Sent: " + phone + " With message: " + message, Toast.LENGTH_SHORT).show();
-                }catch(Exception e){
-                    Toast.makeText(this, "SMS Failed to Send", Toast.LENGTH_SHORT).show();
-                }
-            }
-
+    private void onToggleChanged(boolean isRemote) {
+        // Handle the toggle event here
+        if (isRemote) {
+            // Logic for "Remote" mode
+            // Example: Connect to remote repository
+            System.out.println("Switched to Remote mode");
+        } else {
+            // Logic for "Local" mode
+            // Example: Use local repository
+            System.out.println("Switched to Local mode");
+        }
     }
+
 
 
     // Since main activity implements interface from adapter class these are overridden functions.
@@ -301,6 +317,5 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
     @Override
     public void onQuantityZero(InventoryItem item) {
         String s = item.toString();
-        sendSMS(s);
     }
 }

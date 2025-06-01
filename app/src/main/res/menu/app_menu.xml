@@ -1,9 +1,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/go_settings"
-        android:title="@string/settings"
-        android:icon="@drawable/baseline_app_settings_alt_24"
+    <item android:id="@+id/toggle_remote_local"
+        android:title="@string/toggle_remote_local"
+        android:checkable="true"
         app:showAsAction="ifRoom"/>
 
 
