@@ -1,46 +1,53 @@
+/*
+ * InventoryItem.java
+ * This class represents an inventory item in the inventory management application.
+ * It encapsulates item properties such as ID, title, description, quantity, and user ID,
+ * and provides methods to manage quantity changes with a listener for zero-quantity events.
+ * Author: Shannon Musgrave
+ * Created: June 2025
+ * Version: 1.0
+ */
 package com.zybooks.inventoryproject;
-import java.lang.Integer;
+
 import androidx.annotation.NonNull;
 
-// Data class for each inventory item.
+/**
+ * InventoryItem class represents a single inventory item with properties like ID, title,
+ * description, quantity, and associated user ID. It includes methods for modifying item
+ * details and handling quantity changes with a listener for zero-quantity events.
+ */
 public class InventoryItem {
-
-    // Properties for item, id for database only.
     private int id;
     private String title;
     private String description;
-    private String quantity;
-
+    private int quantity; // Changed to int
     private int userId;
-
     private QtyZeroListener listener;
 
-    // Listener for quantity hitting zero for sms.
-    public interface QtyZeroListener{
+    public interface QtyZeroListener {
         void onQuantityZero(InventoryItem item);
     }
-    // Allow object to sign up or cancel events.
-    public void setQtyZeroListener(QtyZeroListener listener){
+
+    public void setQtyZeroListener(QtyZeroListener listener) {
         this.listener = listener;
     }
-    public void unsetQtyZeroListener(){
+
+    public void unsetQtyZeroListener() {
         this.listener = null;
     }
 
-    // Constructor for initializing class with all info.
-    public InventoryItem(int id, String title, String description, String quantity, int user) {
+    public InventoryItem(int id, String title, String description, int quantity, int userId) {
         this.id = id;
-        // Using setters to apply conditions to protect data.
         setTitle(title);
         setDescription(description);
         setQuantity(quantity);
-        this.userId = user;
+        this.userId = userId;
     }
 
-    // Public getters to provide access to data.
     public int getId() {
         return id;
     }
+
     public String getTitle() {
         return title;
     }
@@ -48,65 +55,49 @@ public class InventoryItem {
     public String getDescription() {
         return description;
     }
-    public String getQuantity(){
+
+    public int getQuantity() {
         return quantity;
     }
-    public int getUserId() {return userId;}
 
-    // Public setters for mutating data.
+    public int getUserId() {
+        return userId;
+    }
+
     public void setTitle(String t) {
-        // Keep strings to 20 for titles.
         this.title = getSubstring(t, 20);
     }
 
     public void setDescription(String d) {
-        // Keep strings to 40 for desc.
         this.description = getSubstring(d, 40);
     }
-    public void setQuantity(String q){
-        int i = 0;
-        // Parse string safely no need for exception, just make quantity 1 if error.
-        try{
-            i = Integer.parseInt(q);
-        }catch (NumberFormatException e){
-            i = 1;
-        }
-        // Make sure no negative values as well.
-        this.quantity = i > 0 && i < Integer.MAX_VALUE ? Integer.toString(i) : "0";
+
+    public void setQuantity(int q) {
+        this.quantity = (q > 0 && q < Integer.MAX_VALUE) ? q : 0;
     }
 
-    // Functions for increment and decrement buttons.
-    public void incrementQty(){
-        // No try/catch here since its already a protected field using setter above.
-        int num = Integer.parseInt(quantity);
-        // Just make sure not to go above max.
-        if (Integer.MAX_VALUE > num){
-            num += 1;
+    public void incrementQty() {
+        if (quantity < Integer.MAX_VALUE) {
+            quantity += 1;
         }
-        this.quantity = Integer.toString(num);
     }
-    public void decrementQty(){
-        // No try/catch here since its already a protected field using setter above.
-        int num = Integer.parseInt(quantity);
-        // Just make sure not to go below 0.
-        if(num > 0){
-            num -= 1;
-            this.quantity = Integer.toString(num);
-            // If num was 1 or more and now is 0, fire event.
-            if(num == 0 && listener != null){
+
+    public void decrementQty() {
+        if (quantity > 0) {
+            quantity -= 1;
+            if (quantity == 0 && listener != null) {
                 listener.onQuantityZero(this);
             }
         }
-
     }
-    // Override to string for use with SMS texting.
+
     @NonNull
     @Override
-    public String toString(){
+    public String toString() {
         return "[ " + title + " has a quantity of " + quantity + " ]";
     }
-    // Small helper method for cutting strings down to size.
-    private String getSubstring(String s, int a){
+
+    private String getSubstring(String s, int a) {
         return s.substring(0, Math.min(a, s.length()));
     }
 }

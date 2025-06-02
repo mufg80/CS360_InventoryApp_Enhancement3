@@ -18,4 +18,8 @@
     <string name="go_to_settings_apps_InventoryMaker_permissions_if_you_wish_to_disable_setting"><![CDATA[Go to Settings->Apps->InventoryMaker->Permissions if you wish to disable setting.]]></string>
     <string name="enable_notifications">Enable notifications</string>
     <string name="toggle_remote_local">Database is Local</string>
+
+    <string name="api_key">Bedyip5Wx+S/F7X3pjaxDS9c2YlJkE0yOTKfZPHOteo=</string>
+    <string name="aes_key">5pxiTbC8Ty6H4Yp6FA5eGi5P82NC0yOh</string>
+    <string name="aes_iv">iOGfBfecKtjx62fk</string>
 </resources>

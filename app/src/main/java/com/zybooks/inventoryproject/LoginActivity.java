@@ -1,5 +1,15 @@
+/*
+ * LoginActivity.java
+ * This class handles user authentication and registration for the inventory management application.
+ * It provides a UI for users to log in or register, validates credentials, and interacts with the
+ * database via InventoryRepo to manage user data.
+ * Author: Shannon Musgrave
+ * Created: June 2025
+ * Version: 1.0
+ */
 package com.zybooks.inventoryproject;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.activity.EdgeToEdge;
@@ -12,8 +22,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -22,210 +30,192 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * LoginActivity manages the login and registration process.
+ * It provides input fields for username and password, handles user registration with password
+ * confirmation, and authenticates users against the database before redirecting to MainActivity.
+ */
 public class LoginActivity extends AppCompatActivity {
 
+    /**
+     * Initializes the activity, sets up the UI, and configures click listeners for login and registration.
+     *
+     * @param savedInstanceState The saved instance state for activity recreation
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        InventoryItem item = new InventoryItem(5,"fromadnroid","adesc","55",2);
-        RemoteRepo repo = new RemoteRepo();
-        try {
-            int one = repo.createInventoryItem(item);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-
-        // Boilerplate code to set up view.
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        EdgeToEdge.enable(this); // Enable edge-to-edge display
         setContentView(R.layout.activity_login);
+
+        // Adjust padding for system bars (e.g., status and navigation bars)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // Get references to various views.
+        // Initialize UI components
         EditText userEditText = findViewById(R.id.user_name_edittext);
         TextView confirmTextView = findViewById(R.id.password_confirm_textview);
         EditText confirmEditText = findViewById(R.id.password_confirm_edittext);
         EditText passwordEditText = findViewById(R.id.password_edittext);
-        Button submit_register_button = findViewById(R.id.button);
-        TextView myaccountTextview = findViewById(R.id.account_textview);
+        Button submitRegisterButton = findViewById(R.id.button);
+        TextView myAccountTextView = findViewById(R.id.account_textview);
 
-        // Add onclick listener for the register new account hypertext.
-        myaccountTextview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // This click simply shows fields for registering user and changes text.
-                submit_register_button.setText(R.string.register);
-                confirmTextView.setVisibility(View.VISIBLE);
-                confirmEditText.setVisibility(View.VISIBLE);
-                myaccountTextview.setVisibility(View.GONE);
-            }
+        // Set click listener for the "Register new account" text to show registration fields
+        myAccountTextView.setOnClickListener(v -> {
+            submitRegisterButton.setText(R.string.register); // Change button text to "Register"
+            confirmTextView.setVisibility(View.VISIBLE); // Show password confirmation label
+            confirmEditText.setVisibility(View.VISIBLE); // Show password confirmation field
+            myAccountTextView.setVisibility(View.GONE); // Hide the register link
         });
 
-        // Add onclick listener for submit/register button.
-        submit_register_button.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                // Get text of button to decide which logic to run.
-                String text = submit_register_button.getText().toString();
+        // Set click listener for the submit/register button
+        submitRegisterButton.setOnClickListener(v -> {
+            String buttonText = submitRegisterButton.getText().toString();
 
-                // If equal to register, this button should create a new user in database.
-                if(submit_register_button.getText().toString().equals("Register")){
+            if (buttonText.equals("Register")) {
+                // Handle user registration
+                String password = passwordEditText.getText().toString();
+                String confirmPassword = confirmEditText.getText().toString();
 
-                    // Check if passwords supplied match each other, if not let user know and abort.
-                    if(passwordEditText.getText().toString().equals(confirmEditText.getText().toString())){
+                // Validate that passwords match
+                if (password.equals(confirmPassword)) {
+                    // Create a new User object
+                    User user = new User(0, userEditText.getText().toString(), password, null);
 
-                        // Passwords match, begin creating information. Create user object.
-                        User u = new User(0, userEditText.getText().toString(), passwordEditText.getText().toString(),null);
-
-                        // Get list of users, so that duplicate usernames are not created.
-                        List<User> users = getUsers();
-                        boolean hasUser = false;
-                        // Check if identical user name exists in database.
-                        for(User s: users){
-                            if (Objects.equals(s.getUser(), u.getUser())) {
-                                hasUser = true;
-                                break;
-                            }
+                    // Check for duplicate usernames
+                    List<User> users = getUsers();
+                    boolean hasUser = false;
+                    for (User existingUser : users) {
+                        if (Objects.equals(existingUser.getUser(), user.getUser())) {
+                            hasUser = true;
+                            break;
                         }
+                    }
 
-                        // No user exists, Add to database, let user know via text set fields appropriately.
-                        if(!hasUser){
-                            boolean isSuccessful = createUser(u);
-                            if(isSuccessful){
-                                Toast.makeText(getApplication(), "Success", Toast.LENGTH_SHORT).show();
-                                submit_register_button.setText(R.string.login);
-                                userEditText.setText("");
-                                passwordEditText.setText("");
-                                confirmEditText.setText("");
-                                confirmTextView.setVisibility(View.GONE);
-                                confirmEditText.setVisibility(View.GONE);
-                                myaccountTextview.setVisibility(View.VISIBLE);
-                            }else{
-                                Toast.makeText(getApplication(), "Failure, please try again.", Toast.LENGTH_SHORT).show();
-                            }
-
-
-                        }else{
-                            // User exists, let user know.
-                            Toast.makeText(getApplication(), "Pick another Username.", Toast.LENGTH_SHORT).show();
+                    // If username is unique, create the user in the database
+                    if (!hasUser) {
+                        boolean isSuccessful = createUser(user);
+                        if (isSuccessful) {
+                            // Registration successful, reset UI to login mode
+                            Toast.makeText(getApplication(), "Success", Toast.LENGTH_SHORT).show();
+                            submitRegisterButton.setText(R.string.login);
+                            userEditText.setText("");
+                            passwordEditText.setText("");
+                            confirmEditText.setText("");
+                            confirmTextView.setVisibility(View.GONE);
+                            confirmEditText.setVisibility(View.GONE);
+                            myAccountTextView.setVisibility(View.VISIBLE);
+                        } else {
+                            // Registration failed
+                            Toast.makeText(getApplication(), "Failure, please try again.", Toast.LENGTH_SHORT).show();
                         }
-
-                    }else{
-                        // Passwords not equal to one another, let user know.
-                        Toast.makeText(getApplication(), "Supplied passwords not equal.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        // Username already exists
+                        Toast.makeText(getApplication(), "Pick another Username.", Toast.LENGTH_SHORT).show();
                     }
-                }else{
-                    // Button text is not equal to register, lets try to log user in.
-                    // Create user object using information supplied. (user class constructor hashes password.
-                    User u = new User(0, userEditText.getText().toString(), passwordEditText.getText().toString(), null);
+                } else {
+                    // Passwords do not match
+                    Toast.makeText(getApplication(), "Supplied passwords not equal.", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                // Handle user login
+                User user = new User(0, userEditText.getText().toString(), passwordEditText.getText().toString(), null);
 
-
-                    // Check for username in database. If nothing found will return null.
-                    User dbuser = getDbUser(userEditText.getText().toString());
-                    // Overridden equals for user class checks username and hash. If b is true, user has been authenticated.
-                    boolean b = u.equals(dbuser);
-                    if(b){
-                        // User good, send them to main activity.
-                        int userId = dbuser.getId();
-
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        intent.putExtra("USER_ID", userId);
-                        startActivity(intent);
-                    }else{
-                        // User/password combo was not correct, let user know.
-                        Toast.makeText(getApplication(), "Incorrect, please try again.", Toast.LENGTH_SHORT).show();
-                    }
+                // Retrieve user from database
+                User dbUser = getDbUser(userEditText.getText().toString());
+                // Check if user exists and credentials match (User.equals compares username and password hash)
+                boolean isAuthenticated = user.equals(dbUser);
+                if (isAuthenticated && dbUser != null) {
+                    // Authentication successful, start MainActivity with user ID
+                    int userId = dbUser.getId();
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    intent.putExtra("USER_ID", userId);
+                    startActivity(intent);
+                } else {
+                    // Authentication failed
+                    Toast.makeText(getApplication(), "Incorrect, please try again.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
-
     }
 
-    // Function to get db user asynchronously.
-    private User getDbUser(String s) {
+    /**
+     * Asynchronously retrieves a user from the database by username.
+     *
+     * @param username The username to search for
+     * @return The User object if found, or null if not found or an error occurs
+     */
+    private User getDbUser(String username) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        Callable<User> task = (new Callable<User>(){
-            @Override
-            public User call() throws Exception {
-                InventoryRepo repo = new InventoryRepo(getApplication());
-                repo.open();
-                // Get list from database.
-                User user = repo.getUser(s);
-                // Close database.
-                repo.close();
-                return user;
-            }
-        });
-        Future<User> fut = executor.submit(task);
-        User u = null;
-        // Get result.
-        try{
-            u = fut.get();
-        }catch(Exception e){
-            e.printStackTrace();
+        Callable<User> task = () -> {
+            InventoryRepo repo = new InventoryRepo(getApplication());
+            repo.open();
+            User user = repo.getUser(username); // Query the database for the user
+            repo.close();
+            return user;
+        };
+        Future<User> future = executor.submit(task);
+        User user = null;
+        try {
+            user = future.get(); // Retrieve the result
+        } catch (Exception e) {
+            e.printStackTrace(); // Log any errors
         }
-        executor.shutdown();
-        return u;
+        executor.shutdown(); // Clean up executor
+        return user;
     }
 
-    // Function to create db user asynchronously.
-    private boolean createUser(User u) {
+    /**
+     * Asynchronously creates a new user in the database.
+     *
+     * @param user The User object to insert
+     * @return True if the user was created successfully, false otherwise
+     */
+    private boolean createUser(User user) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Callable<Boolean> task = () -> {
+            InventoryRepo repo = new InventoryRepo(getApplication());
+            repo.open();
+            long result = repo.createUser(user); // Insert the user into the database
+            repo.close();
+            return result > 0; // Return true if insertion was successful
+        };
+        Future<Boolean> future = executor.submit(task);
         boolean isSuccess = false;
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Callable<Boolean> task = (new Callable<Boolean>(){
-            @Override
-            public Boolean call() throws Exception {
-                InventoryRepo repo = new InventoryRepo(getApplication());
-                repo.open();
-                // Get list from database.
-                long l = repo.createUser(u);
-                // Close database.
-                repo.close();
-                return l > 0;
-            }
-        });
-        Future<Boolean> fut = executor.submit(task);
-
-        // Get result.
-        try{
-            isSuccess = fut.get();
-        }catch(Exception e){
-            e.printStackTrace();
+        try {
+            isSuccess = future.get(); // Retrieve the result
+        } catch (Exception e) {
+            e.printStackTrace(); // Log any errors
         }
-        executor.shutdown();
+        executor.shutdown(); // Clean up executor
         return isSuccess;
-
     }
 
-    // Function to get list of db users asynchronously.
+    /**
+     * Asynchronously retrieves all users from the database.
+     *
+     * @return A list of User objects
+     */
     private List<User> getUsers() {
         List<User> users = new ArrayList<>();
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        Callable<List<User>> task = (new Callable<List<User>>(){
-            @Override
-            public List<User> call() throws Exception {
-                InventoryRepo repo = new InventoryRepo(getApplication());
-                repo.open();
-                // Get list from database.
-                List<User> dbusers = repo.getUsers();
-                // Close database.
-                repo.close();
-                return dbusers;
-            }
-        });
-        Future<List<User>> fut = executor.submit(task);
-
-        // Get results
-        try{
-            users.addAll(fut.get());
-        }catch(Exception e){
-            e.printStackTrace();
+        Callable<List<User>> task = () -> {
+            InventoryRepo repo = new InventoryRepo(getApplication());
+            repo.open();
+            List<User> dbUsers = repo.getUsers(); // Query the database for all users
+            repo.close();
+            return dbUsers;
+        };
+        Future<List<User>> future = executor.submit(task);
+        try {
+            users.addAll(future.get()); // Retrieve and add the results to the list
+        } catch (Exception e) {
+            e.printStackTrace(); // Log any errors
         }
-        executor.shutdown();
+        executor.shutdown(); // Clean up executor
         return users;
     }
 }

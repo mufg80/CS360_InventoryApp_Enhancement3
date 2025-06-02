@@ -1,75 +1,237 @@
+/*
+ * RemoteRepo.java
+ * This class provides methods to interact with a remote API for managing inventory items.
+ * It handles CRUD operations (create, read, update, delete) using HTTP requests with
+ * encrypted API key authentication.
+ * Author: Shannon Musgrave
+ * Created: June 2025
+ * Version: 1.0
+ */
 package com.zybooks.inventoryproject;
 
+import android.content.Context;
+import android.util.Base64;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+/**
+ * RemoteRepo handles communication with a remote API for inventory management.
+ * It uses OkHttp for HTTP requests and Gson for JSON serialization/deserialization.
+ * API requests are authenticated using an AES-encrypted API key.
+ */
 public class RemoteRepo {
-    private static final String BASE_URL = "https://10.0.0.2:7113/api/Inventory/"; // Update with your API URL
-    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    private final OkHttpClient client = new OkHttpClient();
-    private final Gson gson = new Gson();
+    // Constants for API and encryption
+    private static final String BASE_URL = "https://10.0.2.2:7113/api/Inventory/"; // Base URL for the API
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8"); // Media type for JSON requests
+    private static final String ALGORITHM = "AES/CBC/PKCS5Padding"; // Encryption algorithm
+    private static final String AES_KEY = "your_aes_key_32_chars_1234567890ab"; // 32-byte AES key
+    private static final String IV = "your_iv_16_chars12"; // 16-byte initialization vector
+    private static String encryptedString = ""; // Cached encrypted API key
 
-    public int createInventoryItem(InventoryItem item) throws IOException {
+    // Instance variables
+    private final OkHttpClient client = new OkHttpClient(); // HTTP client for API requests
+    private final Gson gson = new Gson(); // Gson instance for JSON processing
+    private final Context context; // Application context for accessing resources
+
+    /**
+     * Constructor for RemoteRepo.
+     * Initializes the context for accessing string resources.
+     *
+     * @param con The application context
+     */
+    public RemoteRepo(Context con) {
+        this.context = con;
+    }
+
+    /**
+     * Encrypts the API key using AES encryption with a key and initialization vector
+     * retrieved from string resources. Caches the result to avoid repeated encryption.
+     *
+     * @return The Base64-encoded encrypted API key
+     * @throws NoSuchAlgorithmException If the AES algorithm is not available
+     * @throws UnsupportedEncodingException If UTF-8 encoding is not supported
+     * @throws NoSuchPaddingException If the padding scheme is not available
+     * @throws InvalidAlgorithmParameterException If the IV is invalid
+     * @throws InvalidKeyException If the AES key is invalid
+     * @throws IllegalBlockSizeException If the block size is invalid
+     * @throws BadPaddingException If the padding is invalid
+     */
+    private String getEncryption() throws NoSuchAlgorithmException, UnsupportedEncodingException,
+            NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException,
+            IllegalBlockSizeException, BadPaddingException {
+        // Return cached encrypted key if available
+        if (!encryptedString.isEmpty()) {
+            return encryptedString;
+        }
+
+        // Retrieve encryption parameters from resources
+        String key = context.getString(R.string.aes_key);
+        String iv = context.getString(R.string.aes_iv);
+        String apiKey = context.getString(R.string.api_key);
+
+        // Set up AES encryption
+        SecretKeySpec keySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+        IvParameterSpec ivSpec = new IvParameterSpec(iv.getBytes("UTF-8"));
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+
+        // Encrypt the API key and encode to Base64
+        byte[] encrypted = cipher.doFinal(apiKey.getBytes("UTF-8"));
+        encryptedString = Base64.encodeToString(encrypted, Base64.NO_WRAP);
+        return encryptedString;
+    }
+
+    /**
+     * Creates a new inventory item via the remote API.
+     *
+     * @param item The InventoryItem to create
+     * @return The ID of the created item, or 0 if the request fails
+     * @throws IOException If a network error occurs
+     * @throws InvalidAlgorithmParameterException If the encryption IV is invalid
+     * @throws NoSuchPaddingException If the padding scheme is not available
+     * @throws IllegalBlockSizeException If the block size is invalid
+     * @throws NoSuchAlgorithmException If the AES algorithm is not available
+     * @throws BadPaddingException If the padding is invalid
+     * @throws InvalidKeyException If the AES key is invalid
+     */
+    public int createInventoryItem(InventoryItem item) throws IOException, InvalidAlgorithmParameterException,
+            NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException,
+            BadPaddingException, InvalidKeyException {
+        // Get encrypted API key
+        String apiKey = getEncryption();
+
+        // Serialize item to JSON
         String json = gson.toJson(item);
         RequestBody body = RequestBody.create(json, JSON);
+
+        // Build and execute POST request
         Request request = new Request.Builder()
                 .url(BASE_URL)
+                .addHeader("X-encrypted-api-key", apiKey)
                 .post(body)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful() && response.body() != null) {
-                return Integer.parseInt(response.body().string()); // API returns new ID
+                return Integer.parseInt(response.body().string()); // Parse returned ID
             }
-            return 0; // Failure
-        } catch (NumberFormatException e) {
-            return 0; // Invalid ID format
         }
+        return 0; // Return 0 on failure
     }
 
-    public int updateInventoryItem(InventoryItem inventoryItem) throws IOException {
+    /**
+     * Updates an existing inventory item via the remote API.
+     *
+     * @param inventoryItem The InventoryItem to update
+     * @return 1 if the update was successful, 0 otherwise
+     * @throws IOException If a network error occurs
+     * @throws InvalidAlgorithmParameterException If the encryption IV is invalid
+     * @throws NoSuchPaddingException If the padding scheme is not available
+     * @throws IllegalBlockSizeException If the block size is invalid
+     * @throws NoSuchAlgorithmException If the AES algorithm is not available
+     * @throws BadPaddingException If the padding is invalid
+     * @throws InvalidKeyException If the AES key is invalid
+     */
+    public int updateInventoryItem(InventoryItem inventoryItem) throws IOException, InvalidAlgorithmParameterException,
+            NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException,
+            BadPaddingException, InvalidKeyException {
+        // Get encrypted API key
+        String apiKey = getEncryption();
+
+        // Serialize item to JSON
         String json = gson.toJson(inventoryItem);
         RequestBody body = RequestBody.create(json, JSON);
+
+        // Build and execute PUT request
         Request request = new Request.Builder()
                 .url(BASE_URL + inventoryItem.getId())
+                .addHeader("X-encrypted-api-key", apiKey)
                 .put(body)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.isSuccessful() ? 1 : 0;
+            return response.isSuccessful() ? 1 : 0; // Return 1 on success, 0 on failure
         }
     }
 
+    /**
+     * Deletes an inventory item via the remote API.
+     *
+     * @param id The ID of the item to delete
+     * @return 1 if the deletion was successful, 0 otherwise
+     * @throws IOException If a network error occurs
+     */
     public int deleteInventoryItem(int id) throws IOException {
+        // Get encrypted API key
+        String apiKey;
+        try {
+            apiKey = getEncryption();
+        } catch (Exception e) {
+            return 0; // Return 0 if encryption fails
+        }
+
+        // Build and execute DELETE request
         Request request = new Request.Builder()
                 .url(BASE_URL + id)
+                .addHeader("X-encrypted-api-key", apiKey)
                 .delete()
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.isSuccessful() ? 1 : 0;
+            return response.isSuccessful() ? 1 : 0; // Return 1 on success, 0 on failure
         }
     }
 
-    public List<InventoryItem> getInventoryItems(int userId) throws IOException {
+    /**
+     * Retrieves a list of inventory items for a specific user from the remote API.
+     *
+     * @param userId The ID of the user whose items are to be retrieved
+     * @return A list of InventoryItem objects
+     * @throws IOException If a network error occurs
+     * @throws InvalidAlgorithmParameterException If the encryption IV is invalid
+     * @throws NoSuchPaddingException If the padding scheme is not available
+     * @throws IllegalBlockSizeException If the block size is invalid
+     * @throws NoSuchAlgorithmException If the AES algorithm is not available
+     * @throws BadPaddingException If the padding is invalid
+     * @throws InvalidKeyException If the AES key is invalid
+     */
+    public List<InventoryItem> getInventoryItems(int userId) throws IOException, InvalidAlgorithmParameterException,
+            NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException,
+            BadPaddingException, InvalidKeyException {
+        // Get encrypted API key
+        String apiKey = getEncryption();
         List<InventoryItem> items = new ArrayList<>();
+
+        // Build and execute GET request
         Request request = new Request.Builder()
                 .url(BASE_URL + "?userId=" + userId)
+                .addHeader("X-encrypted-api-key", apiKey)
                 .get()
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful() && response.body() != null) {
+                // Deserialize JSON response to list of InventoryItem objects
                 String json = response.body().string();
-                items = gson.fromJson(json, new TypeToken<List<InventoryItem>>(){}.getType());
+                items = gson.fromJson(json, new TypeToken<List<InventoryItem>>() {}.getType());
             }
         }
         return items;
