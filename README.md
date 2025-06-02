@@ -31,19 +31,22 @@ Build and run the app in Android Studio.
 ## Use the app to:
 
 Login or Register: Authenticate or create a user account.
-[Insert screenshot of login screen here]
+![alt text](Images/registeruser.png)
+
+![alt text](Images/loginscreen.png)
 
 View Items: Display all inventory items for the logged-in user in a grid.
-[Insert screenshot of item list here]
+Toggle Database Mode: Switch between local and remote database modes via the toolbar.
+Manage Items: Increment, decrement, or delete items, with notifications for zero quantity.
+
+Local DB notice toggle text at top, indicated database used.
+![alt text](Images/localdb.png)
+
+New database toggled, notice new items and text indicating database used.
+![alt text](Images/remotedb.png)
 
 Add Item: Create a new item with title, description, and quantity.
-[Insert screenshot of add item form here]
-
-Manage Items: Increment, decrement, or delete items, with notifications for zero quantity.
-[Insert screenshot of item management actions here]
-
-Toggle Database Mode: Switch between local and remote database modes via the toolbar.
-[Insert screenshot of toolbar with toggle here]
+![alt text](Images/additem.png)
 
 ## Installation
 
