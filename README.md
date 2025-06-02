@@ -1,5 +1,7 @@
-Inventory App
-About the Project
+# Inventory App
+
+## About the Project
+
 The Inventory App is an Android application built with Java in Android Studio, designed to manage inventory items for authenticated users. It supports:
 User authentication (login and registration) with SHA-256 password hashing.
 
@@ -10,9 +12,13 @@ A RecyclerView-based UI to display items in a grid, with options to add, increme
 Toggling between local and remote database modes, with remote operations authenticated using an AES-encrypted API key.
 
 The app uses a local SQLite database for offline storage and connects to a remote InventoryAppRemoteAPI (hosted at https://10.0.2.2:7113/api/Inventory/) for cloud-based inventory management, ensuring flexibility and data accessibility.
-Motivation
+
+## Motivation
+
 Manually managing inventory is time-consuming and error-prone, especially for users needing to track items across multiple devices or locations. The Inventory App automates this process by providing a user-friendly mobile interface for managing inventory, with secure authentication and the ability to switch between local and remote data storage. This ensures data integrity, accessibility, and convenience for users.
-Getting Started
+
+## Getting Started
+
 To get started with the Inventory App, follow these steps:
 Ensure the required environment is set up (see Installation (#installation)).
 
@@ -22,7 +28,8 @@ Configure the local SQLite database (automatically created) and/or the remote AP
 
 Build and run the app in Android Studio.
 
-Use the app to:
+## Use the app to:
+
 Login or Register: Authenticate or create a user account.
 [Insert screenshot of login screen here]
 
@@ -38,7 +45,8 @@ Manage Items: Increment, decrement, or delete items, with notifications for zero
 Toggle Database Mode: Switch between local and remote database modes via the toolbar.
 [Insert screenshot of toolbar with toggle here]
 
-Installation
+## Installation
+
 To set up the environment:
 Install Android Studio (e.g., Arctic Fox or later).
 
@@ -75,7 +83,8 @@ Use Android Studio’s “Run” button to deploy the app.
 
 For remote mode, ensure the emulator uses 10.0.2.2 to access the host machine’s API, and the API’s SSL certificate (localhost.pfx) is trusted.
 
-Usage
+## Usage
+
 The Inventory App supports the following primary use cases:
 User Authentication: Users can log in with a username and password or register a new account. Passwords are hashed using SHA-256 for security.
 
@@ -185,7 +194,9 @@ public int createInventoryItem(InventoryItem item) throws IOException, InvalidAl
 }
 
 This sends a POST request to the remote API with an AES-encrypted API key, creating a new inventory item.
-Contact
+
+## Contact
+
 Shannon Musgrave
 shannon.musgrave@snhu.edu (mailto:shannon.musgrave@snhu.edu)
 
