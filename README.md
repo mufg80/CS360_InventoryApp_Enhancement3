@@ -32,9 +32,7 @@ Build and run the app in Android Studio.
 
 Login or Register: Authenticate or create a user account.
 
-![alt text](images/registeruser.png)
-
-![alt text](images/loginscreen.png)
+![alt text](images/registeruser.png) ![alt text](images/loginscreen.png)
 
 View Items: Display all inventory items for the logged-in user in a grid.
 Toggle Database Mode: Switch between local and remote database modes via the toolbar.
