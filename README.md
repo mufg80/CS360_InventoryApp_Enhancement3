@@ -31,6 +31,7 @@ Build and run the app in Android Studio.
 ## Use the app to:
 
 Login or Register: Authenticate or create a user account.
+
 ![alt text](images/registeruser.png)
 
 ![alt text](images/loginscreen.png)
@@ -40,12 +41,15 @@ Toggle Database Mode: Switch between local and remote database modes via the too
 Manage Items: Increment, decrement, or delete items, with notifications for zero quantity.
 
 Local DB notice toggle text at top, indicated database used.
+
 ![alt text](images/localdb.png)
 
 New database toggled, notice new items and text indicating database used.
+
 ![alt text](images/remotedb.png)
 
 Add Item: Create a new item with title, description, and quantity.
+
 ![alt text](images/additem.png)
 
 ## Installation
