@@ -9,7 +9,6 @@
  */
 package com.zybooks.inventoryproject;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -42,7 +41,6 @@ import java.util.concurrent.Future;
  */
 public class MainActivity extends AppCompatActivity implements InventoryItemAdapter.OnButtonClickListener, InventoryItem.QtyZeroListener {
     // Instance variables
-    private Menu menu; // Reference to the toolbar menu
     private int userId; // ID of the logged-in user
     private RecyclerView recyclerView; // RecyclerView for displaying inventory items
     private InventoryItemAdapter adapter; // Adapter for the RecyclerView
@@ -152,7 +150,6 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        this.menu = menu;
         getMenuInflater().inflate(R.menu.app_menu, menu);
         toggleItem = menu.findItem(R.id.toggle_remote_local);
         updateToggleTitle(); // Set initial toggle title
@@ -424,5 +421,4 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
             item.setQtyZeroListener(this);
         }
     }
-
 }

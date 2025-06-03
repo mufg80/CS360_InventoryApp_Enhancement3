@@ -25,7 +25,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import com.zybooks.inventoryproject.BuildConfig;
 
 /**
  * RemoteRepo handles communication with a remote API for inventory management.
@@ -64,16 +63,8 @@ public class RemoteRepo {
      * @param item The InventoryItem to create
      * @return The ID of the created item, or 0 if the request fails
      * @throws IOException If a network error occurs
-     * @throws InvalidAlgorithmParameterException If the encryption IV is invalid
-     * @throws NoSuchPaddingException If the padding scheme is not available
-     * @throws IllegalBlockSizeException If the block size is invalid
-     * @throws NoSuchAlgorithmException If the AES algorithm is not available
-     * @throws BadPaddingException If the padding is invalid
-     * @throws InvalidKeyException If the AES key is invalid
      */
-    public int createInventoryItem(InventoryItem item) throws IOException, InvalidAlgorithmParameterException,
-            NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException,
-            BadPaddingException, InvalidKeyException {
+    public int createInventoryItem(InventoryItem item) throws IOException{
         // Get encrypted API key
         String apiKey = getEncryption();
 
@@ -102,16 +93,8 @@ public class RemoteRepo {
      * @param inventoryItem The InventoryItem to update
      * @return 1 if the update was successful, 0 otherwise
      * @throws IOException If a network error occurs
-     * @throws InvalidAlgorithmParameterException If the encryption IV is invalid
-     * @throws NoSuchPaddingException If the padding scheme is not available
-     * @throws IllegalBlockSizeException If the block size is invalid
-     * @throws NoSuchAlgorithmException If the AES algorithm is not available
-     * @throws BadPaddingException If the padding is invalid
-     * @throws InvalidKeyException If the AES key is invalid
      */
-    public int updateInventoryItem(InventoryItem inventoryItem) throws IOException, InvalidAlgorithmParameterException,
-            NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException,
-            BadPaddingException, InvalidKeyException {
+    public int updateInventoryItem(InventoryItem inventoryItem) throws IOException{
         // Get encrypted API key
         String apiKey = getEncryption();
 
@@ -165,16 +148,8 @@ public class RemoteRepo {
      * @param userId The ID of the user whose items are to be retrieved
      * @return A list of InventoryItem objects
      * @throws IOException If a network error occurs
-     * @throws InvalidAlgorithmParameterException If the encryption IV is invalid
-     * @throws NoSuchPaddingException If the padding scheme is not available
-     * @throws IllegalBlockSizeException If the block size is invalid
-     * @throws NoSuchAlgorithmException If the AES algorithm is not available
-     * @throws BadPaddingException If the padding is invalid
-     * @throws InvalidKeyException If the AES key is invalid
      */
-    public List<InventoryItem> getInventoryItems(int userId) throws IOException, InvalidAlgorithmParameterException,
-            NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException,
-            BadPaddingException, InvalidKeyException {
+    public List<InventoryItem> getInventoryItems(int userId) throws IOException{
         // Get encrypted API key
         String apiKey = getEncryption();
         List<InventoryItem> items = new ArrayList<>();
