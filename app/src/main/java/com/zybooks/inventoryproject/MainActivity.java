@@ -43,7 +43,6 @@ import java.util.concurrent.Future;
 public class MainActivity extends AppCompatActivity implements InventoryItemAdapter.OnButtonClickListener, InventoryItem.QtyZeroListener {
     // Instance variables
     private Menu menu; // Reference to the toolbar menu
-    private Context context; // Application context
     private int userId; // ID of the logged-in user
     private RecyclerView recyclerView; // RecyclerView for displaying inventory items
     private InventoryItemAdapter adapter; // Adapter for the RecyclerView
@@ -59,15 +58,12 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-
-
-       context = this;
         items = new ArrayList<>(); // Initialize the inventory items list
 
         // Set up the activity layout
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this); // Enable edge-to-edge display
-       setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);
 
         // Adjust padding for system bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -81,8 +77,8 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
         if (intent != null && intent.hasExtra("USER_ID")) {
             this.userId = intent.getIntExtra("USER_ID", -1);
         }
-//
-//        // Fetch initial inventory items and set up UI interactions
+
+        // Fetch initial inventory items and set up UI interactions
         getDatabaseItems();
         setupClicks();
     }
@@ -147,42 +143,6 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
         setSupportActionBar(toolbar);
     }
 
-    /**
-     * Creates a new inventory item in the database, either locally or remotely.
-     *
-     * @param item The InventoryItem to create
-     * @return True if the creation was successful, false otherwise
-     */
-    private boolean onCreateNewItem(InventoryItem item) {
-        if (isRemote) {
-            // Handle remote database creation
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            Callable<Boolean> task = () -> {
-                RemoteRepo repo = new RemoteRepo(context);
-                try {
-                    return repo.createInventoryItem(item) == 1; // Check if insertion was successful
-                } catch (Exception e) {
-                    return false;
-                }
-            };
-            Future<Boolean> future = executor.submit(task);
-            boolean isSuccess = false;
-            try {
-                isSuccess = future.get();
-            } catch (Exception e) {
-                // Suppress exceptions, return false
-            }
-            executor.shutdown();
-            return isSuccess;
-        } else {
-            // Handle local database creation
-            InventoryRepo repo = new InventoryRepo(getApplicationContext());
-            repo.open();
-            long result = repo.createInventoryItem(item);
-            repo.close();
-            return result > 0; // Return true if insertion was successful
-        }
-    }
 
     /**
      * Inflates the toolbar menu.
@@ -235,6 +195,55 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
         getDatabaseItems(); // Refresh the item list
     }
 
+
+    /**
+     * Handles the event when an item's quantity reaches zero, displaying a notification.
+     *
+     * @param item The InventoryItem whose quantity reached zero
+     */
+    @Override
+    public void onQuantityZero(InventoryItem item) {
+        String formattedString = String.format("You are out of: %s", item.getTitle());
+        Toast.makeText(getApplicationContext(), formattedString, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Creates a new inventory item in the database, either locally or remotely.
+     *
+     * @param item The InventoryItem to create
+     * @return True if the creation was successful, false otherwise
+     */
+    private boolean onCreateNewItem(InventoryItem item) {
+        if (isRemote) {
+            // Handle remote database creation asynchronously
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Callable<Boolean> task = () -> {
+                RemoteRepo repo = new RemoteRepo();
+                try {
+                    return repo.createInventoryItem(item) == 1; // Check if insertion was successful
+                } catch (Exception e) {
+                    return false;
+                }
+            };
+            Future<Boolean> future = executor.submit(task);
+            boolean isSuccess = false;
+            try {
+                isSuccess = future.get();
+            } catch (Exception e) {
+                // Suppress exceptions, return false
+            }
+            executor.shutdown();
+            return isSuccess;
+        } else {
+            // Handle local database creation
+            InventoryRepo repo = new InventoryRepo(getApplicationContext());
+            repo.open();
+            long result = repo.createInventoryItem(item);
+            repo.close();
+            return result > 0; // Return true if insertion was successful
+        }
+    }
+
     /**
      * Updates an inventory item’s quantity (increment or decrement) in the database.
      *
@@ -249,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
             // Handle remote database update
             ExecutorService executor = Executors.newSingleThreadExecutor();
             Callable<Boolean> task = () -> {
-                RemoteRepo repo = new RemoteRepo(context);
+                RemoteRepo repo = new RemoteRepo();
                 try {
                     if (toIncrement) {
                         copy.incrementQty();
@@ -266,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
             try {
                 isSuccess = future.get();
             } catch (Exception e) {
-                // Suppress exceptions
+                // Suppress exceptions, handle issues below.
             }
             executor.shutdown();
             if (isSuccess) {
@@ -326,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
             // Handle remote database deletion
             ExecutorService executor = Executors.newSingleThreadExecutor();
             Callable<Boolean> task = () -> {
-                RemoteRepo repo = new RemoteRepo(context);
+                RemoteRepo repo = new RemoteRepo();
                 try {
                     return repo.deleteInventoryItem(item.getId()) == 1; // Check if deletion was successful
                 } catch (Exception e) {
@@ -338,7 +347,7 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
             try {
                 isSuccess = future.get();
             } catch (Exception e) {
-                // Suppress exceptions
+                // Suppress exceptions, handle issues below.
             }
             executor.shutdown();
             if (isSuccess) {
@@ -371,7 +380,7 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
             // Handle remote database fetch
             ExecutorService executor = Executors.newSingleThreadExecutor();
             Callable<List<InventoryItem>> task = () -> {
-                RemoteRepo repo = new RemoteRepo(context);
+                RemoteRepo repo = new RemoteRepo();
                 try {
                     return repo.getInventoryItems(userId);
                 } catch (Exception e) {
@@ -416,14 +425,4 @@ public class MainActivity extends AppCompatActivity implements InventoryItemAdap
         }
     }
 
-    /**
-     * Handles the event when an item's quantity reaches zero, displaying a notification.
-     *
-     * @param item The InventoryItem whose quantity reached zero
-     */
-    @Override
-    public void onQuantityZero(InventoryItem item) {
-        String formattedString = String.format("You are out of: %s", item.getTitle());
-        Toast.makeText(getApplicationContext(), formattedString, Toast.LENGTH_SHORT).show();
-    }
 }

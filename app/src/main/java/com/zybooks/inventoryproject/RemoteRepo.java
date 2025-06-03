@@ -9,28 +9,23 @@
  */
 package com.zybooks.inventoryproject;
 
-import android.content.Context;
-import android.util.Base64;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import com.zybooks.inventoryproject.BuildConfig;
 
 /**
  * RemoteRepo handles communication with a remote API for inventory management.
@@ -42,60 +37,24 @@ public class RemoteRepo {
     private static final String BASE_URL = "https://10.0.2.2:7113/api/Inventory/"; // Base URL for the API
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8"); // Media type for JSON requests
     private static final String ALGORITHM = "AES/CBC/PKCS5Padding"; // Encryption algorithm
-    private static final String AES_KEY = "your_aes_key_32_chars_1234567890ab"; // 32-byte AES key
-    private static final String IV = "your_iv_16_chars12"; // 16-byte initialization vector
     private static String encryptedString = ""; // Cached encrypted API key
 
     // Instance variables
     private final OkHttpClient client = new OkHttpClient(); // HTTP client for API requests
     private final Gson gson = new Gson(); // Gson instance for JSON processing
-    private final Context context; // Application context for accessing resources
-
-    /**
-     * Constructor for RemoteRepo.
-     * Initializes the context for accessing string resources.
-     *
-     * @param con The application context
-     */
-    public RemoteRepo(Context con) {
-        this.context = con;
-    }
 
     /**
      * Encrypts the API key using AES encryption with a key and initialization vector
      * retrieved from string resources. Caches the result to avoid repeated encryption.
      *
      * @return The Base64-encoded encrypted API key
-     * @throws NoSuchAlgorithmException If the AES algorithm is not available
-     * @throws UnsupportedEncodingException If UTF-8 encoding is not supported
-     * @throws NoSuchPaddingException If the padding scheme is not available
-     * @throws InvalidAlgorithmParameterException If the IV is invalid
-     * @throws InvalidKeyException If the AES key is invalid
-     * @throws IllegalBlockSizeException If the block size is invalid
-     * @throws BadPaddingException If the padding is invalid
      */
-    private String getEncryption() throws NoSuchAlgorithmException, UnsupportedEncodingException,
-            NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException,
-            IllegalBlockSizeException, BadPaddingException {
+    private String getEncryption() {
         // Return cached encrypted key if available
         if (!encryptedString.isEmpty()) {
             return encryptedString;
         }
-
-        // Retrieve encryption parameters from resources
-        String key = context.getString(R.string.aes_key);
-        String iv = context.getString(R.string.aes_iv);
-        String apiKey = context.getString(R.string.api_key);
-
-        // Set up AES encryption
-        SecretKeySpec keySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
-        IvParameterSpec ivSpec = new IvParameterSpec(iv.getBytes("UTF-8"));
-        Cipher cipher = Cipher.getInstance(ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
-
-        // Encrypt the API key and encode to Base64
-        byte[] encrypted = cipher.doFinal(apiKey.getBytes("UTF-8"));
-        encryptedString = Base64.encodeToString(encrypted, Base64.NO_WRAP);
+        encryptedString = BuildConfig.API_KEY;
         return encryptedString;
     }
 
