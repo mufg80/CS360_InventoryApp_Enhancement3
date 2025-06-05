@@ -43,6 +43,7 @@ Local DB/ Remote DB, toggle using menu text at top, menu then indicates which da
 
 ![alt text](images/localdb.png) ![alt text](images/remotedb.png)
 
+
 Add Item: Create a new item with title, description, and quantity.
 
 ![alt text](images/additem.png)
@@ -50,7 +51,7 @@ Add Item: Create a new item with title, description, and quantity.
 ## Installation
 
 To set up the environment:
-Install Android Studio (e.g., Arctic Fox or later).
+Install Android Studio.
 
 Ensure the Android SDK is installed, with support for Android API level compatible with the app (e.g., API 30 or higher).
 
@@ -65,25 +66,16 @@ implementation 'com.google.code.gson:gson:2.10.1'
 
 Clone or download the project files to a local directory.
 
-For remote mode, ensure the InventoryAppRemoteAPI is running at https://10.0.2.2:7113 (or update RemoteRepo.java with the correct URL). The API requires a valid AES-encrypted key, stored in string resources (R.string.api_key, R.string.aes_key, R.string.aes_iv).
-
-Create the string resources in res/values/strings.xml:
-xml
-
-<string name="api_key">your_api_key</string>
-<string name="aes_key">your_aes_key_32_chars_1234567890ab</string>
-<string name="aes_iv">your_iv_16_chars12</string>
-
-Contact the project maintainer for the correct API key values.
+For remote mode, ensure the InventoryAppRemoteAPI is running at https://10.0.2.2:7113 (or update RemoteRepo.java with the correct URL). The API requires a valid AES-encrypted key, stored in non version controlled location.
+Once encrypted api key is created, add it to app settings of InventoryAppRemoteAPI. Save for use, Swagger must get Authorization string for troubleshooting.
 
 Build and run the app on an emulator or device:
-bash
-
-./gradlew build
 
 Use Android Studio’s “Run” button to deploy the app.
 
 For remote mode, ensure the emulator uses 10.0.2.2 to access the host machine’s API, and the API’s SSL certificate (localhost.pfx) is trusted.
+
+Once in Production, remove homemade certification and trust of local domain in app manifest.
 
 ## Usage
 
@@ -99,8 +91,11 @@ Manage Items: Users can increment or decrement item quantities or delete items, 
 Toggle Database Mode: Switch between local SQLite storage and remote API storage via a toolbar menu option.
 
 Important: Remote mode requires a running instance of InventoryAppRemoteAPI and a valid encrypted API key. Local mode uses an SQLite database (Inventory.db) created automatically on the device.
+
 Code Example
 Below are examples of key functionality based on the provided source code.
+
+
 Example A: User Login
 The LoginActivity authenticates users by comparing their credentials against the database.
 java
@@ -144,56 +139,61 @@ submitRegisterButton.setOnClickListener(v -> {
 });
 
 This validates usernames and passwords (hashed with SHA-256) and redirects authenticated users to MainActivity.
-Example B: Display Inventory Items
-The InventoryItemAdapter binds item data to a RecyclerView for display.
+
+
+Example B: Save item to local SQLite
+The InventoryRepo class performs local DB operations
 java
 
-@Override
-public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-    InventoryItem item = items.get(position);
-    holder.titleTextView.setText(item.getTitle());
-    holder.descTextView.setText(item.getDescription());
-    holder.qtyTextView.setText(String.valueOf(item.getQuantity()));
-    holder.delButton.setOnClickListener(v -> {
-        if (myListener != null) {
-            myListener.onDelButtonClick(holder.getAbsoluteAdapterPosition());
-        }
-    });
-    holder.decButton.setOnClickListener(v -> {
-        if (myListener != null) {
-            myListener.onDecButtonClick(holder.getAbsoluteAdapterPosition());
-        }
-    });
-    holder.incButton.setOnClickListener(v -> {
-        if (myListener != null) {
-            myListener.onIncButtonClick(holder.getAbsoluteAdapterPosition());
-        }
-    });
+public long createInventoryItem(InventoryItem item) {
+        // Prepare ContentValues with item data
+        ContentValues values = new ContentValues();
+        values.put(InventoryDatabase.InventoryTable.COL_TITLE, item.getTitle());
+        values.put(InventoryDatabase.InventoryTable.COL_DESCRIPTION, item.getDescription());
+        values.put(InventoryDatabase.InventoryTable.COL_QUANTITY, item.getQuantity());
+        values.put(InventoryDatabase.InventoryTable.COL_USER_ID, item.getUserId());
+
+        // Insert the item into the inventory table
+        return database.insert(InventoryDatabase.InventoryTable.TABLE, null, values);
 }
 
-This populates each RecyclerView row with an item’s title, description, and quantity, and sets up click listeners for management actions.
+This saves an inventory item to the SQLite database.
+
+
 Example C: Remote API Interaction
-The RemoteRepo creates inventory items via the remote API.
+The RemoteRepo handles requests to web API, and notifies view of issues or success. This function returns 1 for success or 0 for failure.
+
 java
 
-public int createInventoryItem(InventoryItem item) throws IOException, InvalidAlgorithmParameterException,
-        NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException,
-        BadPaddingException, InvalidKeyException {
-    String apiKey = getEncryption();
-    String json = gson.toJson(item);
-    RequestBody body = RequestBody.create(json, JSON);
-    Request request = new Request.Builder()
-            .url(BASE_URL)
-            .addHeader("X-encrypted-api-key", apiKey)
-            .post(body)
-            .build();
-    try (Response response = client.newCall(request).execute()) {
-        if (response.isSuccessful() && response.body() != null) {
-            return Integer.parseInt(response.body().string());
+public int createInventoryItem(InventoryItem item) throws IOException{
+        // Get encrypted API key
+        String apiKey = "";
+
+        try{
+            apiKey = getEncryption();
+        }catch(Exception e){
+            Log.e("Encryption", "Failed on CreateInventoryItem");
+            return 0;
         }
+
+        // Serialize item to JSON
+        String json = gson.toJson(item);
+        RequestBody body = RequestBody.create(json, JSON);
+
+        // Build and execute POST request
+        Request request = new Request.Builder()
+                .url(BASE_URL)
+                .addHeader("X-encrypted-api-key", apiKey)
+                .post(body)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (response.isSuccessful() && response.body() != null) {
+                return Integer.parseInt(response.body().string()); // Parse returned ID
+            }
+        }
+        return 0; // Return 0 on failure
     }
-    return 0;
-}
 
 This sends a POST request to the remote API with an AES-encrypted API key, creating a new inventory item.
 
