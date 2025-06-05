@@ -9,17 +9,25 @@
  */
 package com.zybooks.inventoryproject;
 
+import android.util.Base64;
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -44,16 +52,29 @@ public class RemoteRepo {
 
     /**
      * Encrypts the API key using AES encryption with a key and initialization vector
-     * retrieved from string resources. Caches the result to avoid repeated encryption.
+     * retrieved from non version controlled file. Caches the result to avoid repeated encryption.
      *
      * @return The Base64-encoded encrypted API key
      */
-    private String getEncryption() {
+    private String getEncryption() throws InvalidAlgorithmParameterException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException {
         // Return cached encrypted key if available
         if (!encryptedString.isEmpty()) {
             return encryptedString;
         }
-        encryptedString = BuildConfig.API_KEY;
+        String key = BuildConfig.KEY;
+        String iv = BuildConfig.IV;
+        String api_key = BuildConfig.API_KEY;
+
+        // Set up AES encryptionAdd commentMore actions
+        SecretKeySpec keySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+        IvParameterSpec ivSpec = new IvParameterSpec(iv.getBytes("UTF-8"));
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+
+        // Encrypt the API key and encode to Base64
+        byte[] encrypted = cipher.doFinal(api_key.getBytes("UTF-8"));
+        encryptedString = Base64.encodeToString(encrypted, Base64.NO_WRAP);
+
         return encryptedString;
     }
 
@@ -66,7 +87,14 @@ public class RemoteRepo {
      */
     public int createInventoryItem(InventoryItem item) throws IOException{
         // Get encrypted API key
-        String apiKey = getEncryption();
+        String apiKey = "";
+
+        try{
+            apiKey = getEncryption();
+        }catch(Exception e){
+            Log.e("Encryption", "Failed on CreateInventoryItem");
+            return 0;
+        }
 
         // Serialize item to JSON
         String json = gson.toJson(item);
@@ -96,7 +124,14 @@ public class RemoteRepo {
      */
     public int updateInventoryItem(InventoryItem inventoryItem) throws IOException{
         // Get encrypted API key
-        String apiKey = getEncryption();
+        String apiKey = "";
+
+        try{
+            apiKey = getEncryption();
+        }catch(Exception e){
+            Log.e("Encryption", "Failed on updateInventoryItem");
+            return 0;
+        }
 
         // Serialize item to JSON
         String json = gson.toJson(inventoryItem);
@@ -123,11 +158,13 @@ public class RemoteRepo {
      */
     public int deleteInventoryItem(int id) throws IOException {
         // Get encrypted API key
-        String apiKey;
-        try {
+        String apiKey = "";
+
+        try{
             apiKey = getEncryption();
-        } catch (Exception e) {
-            return 0; // Return 0 if encryption fails
+        }catch(Exception e){
+            Log.e("Encryption", "Failed on deleteInventoryItem");
+            return 0;
         }
 
         // Build and execute DELETE request
@@ -151,7 +188,15 @@ public class RemoteRepo {
      */
     public List<InventoryItem> getInventoryItems(int userId) throws IOException{
         // Get encrypted API key
-        String apiKey = getEncryption();
+        String apiKey = "";
+
+        try{
+            apiKey = getEncryption();
+        }catch(Exception e){
+            Log.e("Encryption", "Failed on getInventoryItems");
+            return new ArrayList<InventoryItem>();
+        }
+
         List<InventoryItem> items = new ArrayList<>();
 
         // Build and execute GET request
