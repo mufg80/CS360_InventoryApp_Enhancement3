@@ -5,13 +5,13 @@
 The Inventory App is an Android application built with Java in Android Studio, designed to manage inventory items for authenticated users. It supports:
 User authentication (login and registration) with SHA-256 password hashing.
 
-CRUD operations (create, read, update, delete) for inventory items, stored either locally in an SQLite database or remotely via a Web API.
+Create, read, update, delete (CRUD) for inventory items, stored either locally in an SQLite database or remotely via a Web API.
 
 A RecyclerView-based UI to display items in a grid, with options to add, increment, decrement, or delete items.
 
 Toggling between local and remote database modes, with remote operations authenticated using an AES-encrypted API key.
 
-The app uses a local SQLite database for offline storage and connects to a remote InventoryAppRemoteAPI (hosted at https://10.0.2.2:7113/api/Inventory/) for cloud-based inventory management, ensuring flexibility and data accessibility.
+The app uses a local SQLite database for offline storage and connects to a remote InventoryAppRemoteAPI (hosted at (Development site) https://10.0.2.2:7113/api/Inventory/) for cloud-based inventory management, ensuring flexibility and data accessibility.
 
 ## Motivation
 
@@ -23,6 +23,7 @@ To get started with the Inventory App, follow these steps:
 Ensure the required environment is set up (see Installation (#installation)).
 
 Clone or download the project files to a local directory.
+### Note: See repository InventoryAppRemoteAPI to install the web API.
 
 Configure the local SQLite database (automatically created) and/or the remote API (requires a running instance of InventoryAppRemoteAPI).
 
