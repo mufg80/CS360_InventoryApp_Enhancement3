@@ -96,7 +96,8 @@ Code Example
 Below are examples of key functionality based on the provided source code.
 
 
-Example A: User Login
+### Example A: User Login
+
 The LoginActivity authenticates users by comparing their credentials against the database.
 ```java
 
@@ -143,7 +144,8 @@ submitRegisterButton.setOnClickListener(v -> {
 This validates usernames and passwords (hashed with SHA-256) and redirects authenticated users to MainActivity.
 
 
-Example B: Save item to local SQLite
+### Example B: Save item to local SQLite
+
 The InventoryRepo class performs local DB operations
 ```java
 
@@ -162,7 +164,8 @@ public long createInventoryItem(InventoryItem item) {
 This saves an inventory item to the SQLite database.
 
 
-Example C: Remote API Interaction
+### Example C: Remote API Interaction
+
 The RemoteRepo handles requests to web API, and notifies view of issues or success. This function returns 1 for success or 0 for failure.
 
 ```java
