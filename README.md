@@ -39,13 +39,9 @@ View Items: Display all inventory items for the logged-in user in a grid.
 Toggle Database Mode: Switch between local and remote database modes via the toolbar.
 Manage Items: Increment, decrement, or delete items, with notifications for zero quantity.
 
-Local DB notice toggle text at top, indicated database used.
+Local DB/ Remote DB, toggle using menu text at top, menu then indicates which database is displayed.
 
-![alt text](images/localdb.png)
-
-New database toggled, notice new items and text indicating database used.
-
-![alt text](images/remotedb.png)
+![alt text](images/localdb.png) ![alt text](images/remotedb.png)
 
 Add Item: Create a new item with title, description, and quantity.
 
