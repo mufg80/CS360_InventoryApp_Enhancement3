@@ -98,7 +98,7 @@ Below are examples of key functionality based on the provided source code.
 
 Example A: User Login
 The LoginActivity authenticates users by comparing their credentials against the database.
-java
+```java
 
 submitRegisterButton.setOnClickListener(v -> {
     String buttonText = submitRegisterButton.getText().toString();
@@ -138,12 +138,14 @@ submitRegisterButton.setOnClickListener(v -> {
     }
 });
 
+```
+
 This validates usernames and passwords (hashed with SHA-256) and redirects authenticated users to MainActivity.
 
 
 Example B: Save item to local SQLite
 The InventoryRepo class performs local DB operations
-java
+```java
 
 public long createInventoryItem(InventoryItem item) {
         // Prepare ContentValues with item data
@@ -156,14 +158,14 @@ public long createInventoryItem(InventoryItem item) {
         // Insert the item into the inventory table
         return database.insert(InventoryDatabase.InventoryTable.TABLE, null, values);
 }
-
+```
 This saves an inventory item to the SQLite database.
 
 
 Example C: Remote API Interaction
 The RemoteRepo handles requests to web API, and notifies view of issues or success. This function returns 1 for success or 0 for failure.
 
-java
+```java
 
 public int createInventoryItem(InventoryItem item) throws IOException{
         // Get encrypted API key
@@ -194,6 +196,7 @@ public int createInventoryItem(InventoryItem item) throws IOException{
         }
         return 0; // Return 0 on failure
     }
+```
 
 This sends a POST request to the remote API with an AES-encrypted API key, creating a new inventory item.
 
