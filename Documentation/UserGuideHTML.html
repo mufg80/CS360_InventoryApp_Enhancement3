@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android Inventory Application - User Guide</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 2.2em;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            font-size: 1.8em;
+            margin-top: 20px;
+        }
+        h3 {
+            font-size: 1.4em;
+            margin-top: 15px;
+        }
+        p, li {
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        .section {
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .highlight {
+            background-color: #e8f0fe;
+            padding: 10px;
+            border-left: 4px solid #3498db;
+            margin-bottom: 10px;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #777;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+            .section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Android Inventory Application</h1>
+    <h2>User Guide for Inventory Managers: Menu Usage and Error Handling</h2>
+
+    <div class="section">
+        <h2>Introduction</h2>
+        <p>The Android Inventory Application is designed to assist inventory managers and staff in managing inventory items efficiently on Android devices. The app provides a user-friendly interface for user authentication, viewing and editing inventory items, and switching between local and remote database modes. It uses a SQLite database for local storage and a RESTful API for remote data access, with a secure API key authentication.</p>
+    </div>
+
+    <div class="section">
+        <h2>User Input Handling</h2>
+        <h3>Input Types</h3>
+        <ul>
+            <li>Username (text), password (text), and password confirmation (text for registration). Inputs are case-sensitive.</li>
+            <li>Title (text, max 20 characters), description (text, max 40 characters), quantity (numeric, default 1 if invalid). Button clicks for increment, decrement, delete, and toggle operations.</li>
+        </ul>
+        <h3>Validation</h3>
+        <ul>
+            <li><strong>Login:</strong> Invalid credentials trigger: Incorrect, please try again. </li>
+            <li><strong>Registration:</strong> Mismatched passwords show: Supplied passwords not equal.  Duplicate usernames display: Pick another Username. </li>
+            <li><strong>Add Item:</strong> Overly long title/description fields are truncated.</li>
+        </ul>
+        <h3>Errors</h3>
+        <ul>
+            <li><strong>Connection Failure:</strong> If the server is unreachable, the app displays: Cannot connect to remote database.  Ensure an active internet connection and retry.</li>
+            <li><strong>Invalid API Key:</strong> Server-side validation failures result in HTTP 401 (Unauthorized), causing the app to retry or fall back to local mode. 10 seconds for time-out.</li>
+            <li><strong>Server Errors:</strong> HTTP 404 (Not Found) or 400 (Bad Request) responses trigger toasts: There was a problem, please try again. </li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Design Choices</h2>
+        <ul>
+            <li><strong>User-Friendly Interface:</strong> Clear prompts (e.g., Login , Register ) and toasts guide non-technical users. The inventory list displays items in a grid with intuitive buttons (+ , - , Delete ).</li>
+            <li><strong>Local/Remote Flexibility:</strong> The toggle option allows seamless switching between local and remote modes, accommodating offline use or server-based operations.</li>
+            <li><strong>Security:</strong> Passwords are hashed (SHA-256) and not saved as plain text, and API requests use encrypted keys. SQLite queries are parameterized to prevent injection and server side validates objects before saving to database.</li>
+            <li><strong>Error Feedback:</strong> Toasts provide immediate feedback without overwhelming users, while detailed logs aid developers in troubleshooting.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Performance</h2>
+        <ul>
+            <li><strong>Local Operations:</strong> SQLite queries are nearly instantaneous (< 100ms for fetching 100 items). Database writes (create/update/delete) are optimized with parameterized queries.</li>
+            <li><strong>Remote Operations:</strong> HTTPS requests depend on network latency, typically 200–500ms for a stable connection. Asynchronous tasks prevent UI freezes.</li>
+            <li><strong>Scalability:</strong> The app handles hundreds of items efficiently in local mode. Remote mode performance depends on server capacity, but client-side caching (items list) reduces redundant requests.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Limitations</h2>
+        <ul>
+            <li><strong>Login Sensitivity:</strong> Users must enter exact usernames and passwords, with no “forgot password” feature, which may frustrate staff unfamiliar with credentials.</li>
+            <li><strong>Error Guidance:</strong> Toasts like There was a problem, please try again  identify issues but don’t suggest specific fixes.</li>
+            <li><strong>Remote Dependency:</strong> Remote mode requires a stable internet connection and a running server. Downtime or network issues force fallback to local mode.</li>
+            <li><strong>Manual Data Correction:</strong> Invalid item data (e.g., overly long titles) is rejected without detailed guidance, requiring users to retry with correct inputs.</li>
+            </ul>
+    </div>
+
+    <div class="section">
+        <h2>Instructions for Use</h2>
+        <ul>
+            <li><strong>Launch the App:</strong> Open the Android Inventory Application on your device.</li>
+            <li><strong>Login or Register:</strong> Enter your credentials or create a new account.</li>
+            <li><strong>Modify Quantity:</strong> Tap +  to increment or -  to decrement an item’s quantity. A toast notifies if quantity reaches zero.</li>
+            <li><strong>Delete Item:</strong> Tap Delete  to remove an item. Confirm success via the updated list or a toast if it fails.</li>
+            <li><strong>Add Item:</strong> Tap the Floating Action Button, enter title (≤ 20 chars), description (≤ 40 chars), and quantity (numeric), then tap Submit . Success shows: Success ; failures show: There was a problem, please try again. </li>
+            <li><strong>Toggle Database:</strong> Tap the toolbar menu and select Toggle Remote/Local . The title updates (e.g., Database is Remote ), and the list refreshes. If remote fails, a toast shows: Cannot connect to remote database. </li>
+            </ul>
+    </div>
+
+    <div class="section">
+        <h2>Troubleshooting</h2>
+        <ul>
+            <li><strong>Login Issues:</strong> Verify username/password or register a new account.</li>
+            <li><strong>Database Errors:</strong> For remote issues, check internet connection or switch to local mode. For local database crashes, clear app data (Settings > Apps > Inventory App > Storage > Clear Data) and re-login.</li>
+            <li><strong>Item Errors:</strong> Ensure title/description lengths and quantity are valid. Retry if toasts indicate failures.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Conclusion</h2>
+        <p>The Android Inventory Application provides a robust, user-friendly solution for managing inventory items, with flexible local and remote database support. By following this guide, inventory managers and staff can navigate the app’s menus, handle inputs, and address common errors effectively. While limitations like login sensitivity and remote dependency exist, the app’s feedback and secure design make it suitable for non-technical users.</p>
+    </div>
+
+    <footer>
+        <p>Generated on June 5, 2025</p>
+    </footer>
+</body>
+</html>

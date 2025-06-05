@@ -65,7 +65,7 @@ public class RemoteRepo {
         String iv = BuildConfig.IV;
         String api_key = BuildConfig.API_KEY;
 
-        // Set up AES encryptionAdd commentMore actions
+        // Set up AES encryption
         SecretKeySpec keySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
         IvParameterSpec ivSpec = new IvParameterSpec(iv.getBytes("UTF-8"));
         Cipher cipher = Cipher.getInstance(ALGORITHM);
