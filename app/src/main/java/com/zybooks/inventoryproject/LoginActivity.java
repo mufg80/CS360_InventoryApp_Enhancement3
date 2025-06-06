@@ -129,7 +129,7 @@ public class LoginActivity extends AppCompatActivity {
                 boolean isAuthenticated = user.equals(dbUser);
                 if (isAuthenticated && dbUser != null) {
                     // Authentication successful, start MainActivity with user ID
-                    int userId = dbUser.getId();
+                    int userId = dbUser.hashCode();
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     intent.putExtra("USER_ID", userId);
                     startActivity(intent);

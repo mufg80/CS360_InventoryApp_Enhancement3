@@ -67,7 +67,7 @@ public class User {
     /**
      * Gets the user's password hash.
      *
-     * @return The SHA-256 hash of the password
+     * @return The hash of the password
      */
     public String getHash() {
         return this.hash;
@@ -123,6 +123,13 @@ public class User {
     public int hashCode() {
         int result = user != null ? user.hashCode() : 0;
         int result1 = hash != null ? hash.hashCode() : 0;
-        return 31 * result + result1; // Combine hash codes for consistency
+        long res =  3 * result + result1; // Combine hash codes for consistency
+        if(res < 0){
+            res = -res;
+        }
+        if(res > Integer.MAX_VALUE){
+            res = res - Integer.MAX_VALUE;
+        }
+        return (int)res;
     }
 }
