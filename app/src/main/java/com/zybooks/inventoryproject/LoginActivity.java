@@ -70,6 +70,26 @@ public class LoginActivity extends AppCompatActivity {
             myAccountTextView.setVisibility(View.GONE); // Hide the register link
         });
 
+        setUpClick(submitRegisterButton, passwordEditText, confirmEditText, userEditText, confirmTextView, myAccountTextView);
+    }
+
+    /**
+     * Sets up a click listener for the submit/register button to handle user authentication.
+     * If the button displays "Register", it attempts to register a new user.
+     * If the button displays "Login", it attempts to authenticate the user.
+     *
+     * @param submitRegisterButton The button used for registration or login actions.
+     * @param passwordEditText The input field for the user's password.
+     * @param confirmEditText The input field for confirming the password (used in registration mode).
+     * @param userEditText The input field for the user's username.
+     * @param confirmTextView The label associated with the confirm password field.
+     * @param myAccountTextView The text view indicating the user has an account.
+     *
+     * @throws NullPointerException If any of the provided views are null.
+     * @throws IllegalArgumentException If username or password is empty or null during registration.
+     */
+    private void setUpClick(Button submitRegisterButton, EditText passwordEditText, EditText confirmEditText,
+                            EditText userEditText, TextView confirmTextView, TextView myAccountTextView) {
         // Set click listener for the submit/register button
         submitRegisterButton.setOnClickListener(v -> {
             String buttonText = submitRegisterButton.getText().toString();
@@ -86,13 +106,8 @@ public class LoginActivity extends AppCompatActivity {
 
                     // Check for duplicate usernames
                     List<User> users = getUsers();
-                    boolean hasUser = false;
-                    for (User existingUser : users) {
-                        if (Objects.equals(existingUser.getUser(), user.getUser())) {
-                            hasUser = true;
-                            break;
-                        }
-                    }
+                    boolean hasUser = users.stream()
+                            .anyMatch(existingUser -> Objects.equals(existingUser.getUser(), user.getUser()));
 
                     // If username is unique, create the user in the database
                     if (!hasUser) {
@@ -125,9 +140,10 @@ public class LoginActivity extends AppCompatActivity {
 
                 // Retrieve user from database
                 User dbUser = getDbUser(userEditText.getText().toString());
+
                 // Check if user exists and credentials match (User.equals compares username and password hash)
                 boolean isAuthenticated = user.equals(dbUser);
-                if (isAuthenticated && dbUser != null) {
+                if (isAuthenticated) {
                     // Authentication successful, start MainActivity with user ID
                     int userId = dbUser.hashCode();
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -140,6 +156,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
+
 
     /**
      * Asynchronously retrieves a user from the database by username.

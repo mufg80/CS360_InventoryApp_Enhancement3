@@ -11,7 +11,6 @@ package com.zybooks.inventoryproject;
 
 import android.util.Base64;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
@@ -27,7 +26,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -52,10 +50,19 @@ public class RemoteRepo {
 
     /**
      * Encrypts the API key using AES encryption with a key and initialization vector
-     * retrieved from non version controlled file. Caches the result to avoid repeated encryption.
+     * retrieved from a non-version-controlled file. Caches the result to avoid repeated encryption.
      *
-     * @return The Base64-encoded encrypted API key
+     * @throws InvalidAlgorithmParameterException If the provided IV is invalid for AES encryption.
+     * @throws InvalidKeyException If the encryption key is invalid or incorrectly formatted.
+     * @throws NoSuchPaddingException If the requested padding scheme is not available.
+     * @throws NoSuchAlgorithmException If the AES encryption algorithm is not available.
+     * @throws UnsupportedEncodingException If the character encoding for key or API key is unsupported.
+     * @throws IllegalBlockSizeException If the API key size is incorrect for AES encryption.
+     * @throws BadPaddingException If an error occurs during encryption due to incorrect padding.
+     *
+     * @return The Base64-encoded encrypted API key.
      */
+
     private String getEncryption() throws InvalidAlgorithmParameterException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException {
         // Return cached encrypted key if available
         if (!encryptedString.isEmpty()) {

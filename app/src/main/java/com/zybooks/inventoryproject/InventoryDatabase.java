@@ -12,7 +12,6 @@ package com.zybooks.inventoryproject;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-
 import androidx.annotation.Nullable;
 
 /**
@@ -63,7 +62,6 @@ public class InventoryDatabase extends SQLiteOpenHelper {
     /**
      * Handles database schema upgrades by dropping existing tables and recreating them.
      * This ensures the database schema is updated to the latest version.
-     *
      * @param sqLiteDatabase The SQLiteDatabase instance to execute table operations
      * @param oldVersion The previous database version
      * @param newVersion The new database version
