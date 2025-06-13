@@ -206,6 +206,7 @@ This sends a POST request to the remote API with an AES-encrypted API key, creat
 ## Contact
 
 Shannon Musgrave
-shannon.musgrave@snhu.edu (mailto:shannon.musgrave@snhu.edu)
+
+mufg80@hotmail.com (mailto:mufg80@hotmail.com)
 
 
